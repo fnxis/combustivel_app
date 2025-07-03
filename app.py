@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from datetime import datetime
+import os
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta'  # necessário para flash messages
+app.secret_key = 'sua_chave_secreta'
 
 DB = 'abastecimentos.db'
 
@@ -12,6 +13,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Criação da tabela com colunas adicionais
 def criar_tabela():
     conn = get_db_connection()
     conn.execute("""
@@ -20,7 +22,9 @@ def criar_tabela():
             data TEXT,
             litros REAL,
             valor REAL,
-            km REAL
+            km REAL,
+            km_restante REAL,
+            litros_restantes REAL
         )
     """)
     conn.commit()
@@ -37,9 +41,16 @@ def index():
             km = float(request.form["km"])
             data = datetime.now().strftime("%d/%m/%Y %H:%M")
 
+            # Cálculo
+            km_total = litros * 10
+            km_restante = max(0, km_total - km)
+            litros_restantes = max(0, km_restante / 10)
+
             conn = get_db_connection()
-            conn.execute("INSERT INTO abastecimentos (data, litros, valor, km) VALUES (?, ?, ?, ?)",
-                         (data, litros, valor, km))
+            conn.execute("""
+                INSERT INTO abastecimentos (data, litros, valor, km, km_restante, litros_restantes)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (data, litros, valor, km, km_restante, litros_restantes))
             conn.commit()
             conn.close()
 
@@ -54,13 +65,9 @@ def index():
     abastecimentos = conn.execute("SELECT * FROM abastecimentos ORDER BY id DESC").fetchall()
     conn.close()
 
-    # Calcular consumo e dados de combustível restante para exibir
     lista = []
     for row in abastecimentos:
         consumo = row["km"] / row["litros"] if row["litros"] != 0 else 0
-        km_total = row["litros"] * 10
-        km_restante = max(0, km_total - row["km"])
-        litros_restantes = max(0, km_restante / 10)
         lista.append({
             "id": row["id"],
             "data": row["data"],
@@ -68,9 +75,8 @@ def index():
             "valor": row["valor"],
             "km": row["km"],
             "consumo": consumo,
-            "km_total": km_total,
-            "km_restante": km_restante,
-            "litros_restantes": litros_restantes
+            "km_restante": row["km_restante"],
+            "litros_restantes": row["litros_restantes"]
         })
 
     return render_template("index.html", abastecimentos=lista)
@@ -85,7 +91,5 @@ def excluir(id):
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-

@@ -50,7 +50,6 @@
                 <th>Valor (R$)</th>
                 <th>Km Rodados</th>
                 <th>Consumo (km/L)</th>
-                <th>Km Totais Possíveis</th>
                 <th>Km Restantes</th>
                 <th>Litros Restantes</th>
                 <th>Ações</th>
@@ -64,7 +63,6 @@
                 <td>R$ {{ "%.2f"|format(a.valor) }}</td>
                 <td>{{ "%.1f"|format(a.km) }}</td>
                 <td>{{ "%.1f"|format(a.consumo) }}</td>
-                <td>{{ "%.1f"|format(a.km_total) }}</td>
                 <td>{{ "%.1f"|format(a.km_restante) }}</td>
                 <td>{{ "%.2f"|format(a.litros_restantes) }}</td>
                 <td>
@@ -73,7 +71,7 @@
                 </td>
             </tr>
         {% else %}
-            <tr><td colspan="9" class="text-center">Nenhum registro encontrado.</td></tr>
+            <tr><td colspan="8" class="text-center">Nenhum registro encontrado.</td></tr>
         {% endfor %}
         </tbody>
     </table>
