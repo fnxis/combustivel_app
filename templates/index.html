@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Controle de Abastecimento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+    <h1 class="mb-4">Controle de Abastecimento</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="litros" class="form-label">Litros abastecidos:</label>
+            <input type="number" step="0.01" class="form-control" id="litros" name="litros" required>
+        </div>
+        <div class="col-md-4">
+            <label for="valor" class="form-label">Valor pago (R$):</label>
+            <input type="number" step="0.01" class="form-control" id="valor" name="valor" required>
+        </div>
+        <div class="col-md-4">
+            <label for="km" class="form-label">Quilometragem rodada:</label>
+            <input type="number" step="0.1" class="form-control" id="km" name="km" required>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Salvar Abastecimento</button>
+        </div>
+    </form>
+
+    <h3>Histórico de Abastecimentos</h3>
+
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Data</th>
+                <th>Litros</th>
+                <th>Valor (R$)</th>
+                <th>Km Rodados</th>
+                <th>Consumo (km/L)</th>
+                <th>Km Totais Possíveis</th>
+                <th>Km Restantes</th>
+                <th>Litros Restantes</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for a in abastecimentos %}
+            <tr>
+                <td>{{ a.data }}</td>
+                <td>{{ "%.2f"|format(a.litros) }}</td>
+                <td>R$ {{ "%.2f"|format(a.valor) }}</td>
+                <td>{{ "%.1f"|format(a.km) }}</td>
+                <td>{{ "%.1f"|format(a.consumo) }}</td>
+                <td>{{ "%.1f"|format(a.km_total) }}</td>
+                <td>{{ "%.1f"|format(a.km_restante) }}</td>
+                <td>{{ "%.2f"|format(a.litros_restantes) }}</td>
+                <td>
+                    <a href="{{ url_for('excluir', id=a.id) }}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Deseja realmente excluir este registro?');">Excluir</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="9" class="text-center">Nenhum registro encontrado.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
