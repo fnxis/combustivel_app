@@ -16,20 +16,37 @@ def get_db_connection():
 # Criação da tabela com colunas adicionais
 def criar_tabela():
     conn = get_db_connection()
-    conn.execute("""
+    cursor = conn.cursor()
+
+    # Cria a tabela se não existir
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS abastecimentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             data TEXT,
             litros REAL,
             valor REAL,
-            km REAL,
-            km_restante REAL,
-            litros_restantes REAL
+            km REAL
         )
     """)
+
+    # Verifica se as colunas extras existem, senão adiciona
+    colunas_necessarias = {
+        "km_restante": "REAL",
+        "litros_restantes": "REAL"
+    }
+
+    # Consulta os nomes das colunas existentes na tabela
+    cursor.execute("PRAGMA table_info(abastecimentos)")
+    colunas_existentes = [col[1] for col in cursor.fetchall()]
+
+    for coluna, tipo in colunas_necessarias.items():
+        if coluna not in colunas_existentes:
+            cursor.execute(f"ALTER TABLE abastecimentos ADD COLUMN {coluna} {tipo}")
+            print(f"Coluna '{coluna}' adicionada à tabela.")
+
     conn.commit()
     conn.close()
-
+    
 criar_tabela()
 
 @app.route("/", methods=["GET", "POST"])
